@@ -18,7 +18,8 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main class="screen">
+  <!-- Obrazovka 1: domov (mriežka mini-appiek) -->
+  <main class="screen" id="view-home">
     <header class="top">
       <p class="date" id="date">&nbsp;</p>
       <h1 id="greeting">Ahoj, Adam</h1>
@@ -30,8 +31,7 @@
       <a class="tile tile-blue" href="#terminy">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         <span class="name">Termíny</span>
-        <span class="sub">odpočet do písomiek</span>
-        <span class="badge">čoskoro</span>
+        <span class="sub" id="next-deadline">odpočet do písomiek</span>
       </a>
       <a class="tile tile-amber" href="#bodovanie">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
@@ -58,6 +58,17 @@
         <span class="badge">čoskoro</span>
       </a>
     </section>
+  </main>
+
+  <!-- Obrazovka 2: termíny (zobrazí sa, keď je v adrese #terminy) -->
+  <main class="screen" id="view-terminy" hidden>
+    <a class="back" href="#">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Domov
+    </a>
+    <h1>Termíny</h1>
+    <p class="status" id="terminy-updated">&nbsp;</p>
+    <ol class="list" id="terminy-list"></ol>
   </main>
 
   <script src="/app.js"></script>

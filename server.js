@@ -5,6 +5,7 @@
 const http = require("node:http");   // modul na webový server
 const fs = require("node:fs");       // modul na čítanie súborov
 const path = require("node:path");   // modul na skladanie ciest k súborom
+const { readTerminy } = require("./lib/terminy.js"); // môj čítač termínov z Obsidianu
 
 // --- 1. Nastavenia -----------------------------------------------------------
 // Nastavenia sú v config.json (ten NEJDE na GitHub, sú v ňom moje cesty).
@@ -41,6 +42,20 @@ function handleRequest(req, res) {
   if (url.pathname === "/api/health") {
     res.writeHead(200, { "Content-Type": TYPES[".json"] });
     res.end(JSON.stringify({ ok: true, time: new Date().toISOString() }));
+    return;
+  }
+
+  // termíny z Obsidianu — čítame pri každej požiadavke, takže sú vždy čerstvé
+  if (url.pathname === "/api/terminy") {
+    try {
+      const terminy = readTerminy(config.vaultPath);
+      res.writeHead(200, { "Content-Type": TYPES[".json"] });
+      res.end(JSON.stringify({ updated: new Date().toISOString(), terminy }));
+    } catch (err) {
+      console.error("Termíny sa nepodarilo prečítať:", err.message);
+      res.writeHead(500, { "Content-Type": TYPES[".json"] });
+      res.end(JSON.stringify({ error: "Termíny sa nepodarilo prečítať z Obsidianu" }));
+    }
     return;
   }
 

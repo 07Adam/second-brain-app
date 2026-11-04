@@ -11,7 +11,7 @@ and it behaves like a native app (own icon, full screen, no App Store).
 
 - [x] Home screen with mini-app tiles, iPhone-ready (safe areas, home-screen icon)
 - [x] Server health indicator
-- [ ] Deadlines with countdown (read-only from the vault)
+- [x] Deadlines with countdown (read-only from the vault, last data kept on the phone)
 - [ ] Grade tables (read-only from the vault)
 - [ ] Offline mode (last synced data when the laptop is off)
 - [ ] Quick note → Obsidian
