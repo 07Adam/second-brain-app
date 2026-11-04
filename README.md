@@ -47,6 +47,32 @@ works only inside your own tailnet (not on the public internet):
 
 Do not use `tailscale funnel` — that would publish the app on the internet.
 
+### Start automatically (systemd user service)
+
+So the app runs whenever the laptop is on, create `~/.config/systemd/user/second-brain-app.service`:
+
+```ini
+[Unit]
+Description=Second Brain app
+After=network.target
+
+[Service]
+WorkingDirectory=/path/to/second-brain-app
+ExecStart=/path/to/node server.js
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+systemctl --user enable --now second-brain-app
+systemctl --user status second-brain-app      # is it running?
+journalctl --user -u second-brain-app -f      # live log
+```
+
+Use the absolute path of `node` (`which node`). If you use nvm and upgrade Node, update `ExecStart`.
+
 ## Project structure
 
 ```
