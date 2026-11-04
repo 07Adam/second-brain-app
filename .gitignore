@@ -1,0 +1,12 @@
+# moje osobné nastavenia (cesty k vaultu) — nikdy na GitHub
+config.json
+.env
+
+# Node
+node_modules/
+
+# systém
+.DS_Store
+
+# nastavenia Claude Code (obsahujú moje cesty)
+.claude/
