@@ -6,6 +6,7 @@ const http = require("node:http");   // modul na webový server
 const fs = require("node:fs");       // modul na čítanie súborov
 const path = require("node:path");   // modul na skladanie ciest k súborom
 const { readTerminy } = require("./lib/terminy.js"); // môj čítač termínov z Obsidianu
+const { readBodovanie } = require("./lib/bodovanie.js"); // môj čítač bodov z Obsidianu
 
 // --- 1. Nastavenia -----------------------------------------------------------
 // Nastavenia sú v config.json (ten NEJDE na GitHub, sú v ňom moje cesty).
@@ -55,6 +56,20 @@ function handleRequest(req, res) {
       console.error("Termíny sa nepodarilo prečítať:", err.message);
       res.writeHead(500, { "Content-Type": TYPES[".json"] });
       res.end(JSON.stringify({ error: "Termíny sa nepodarilo prečítať z Obsidianu" }));
+    }
+    return;
+  }
+
+  // body zo všetkých poznámok so sekciou "## Moje body"
+  if (url.pathname === "/api/bodovanie") {
+    try {
+      const predmety = readBodovanie(config.vaultPath);
+      res.writeHead(200, { "Content-Type": TYPES[".json"] });
+      res.end(JSON.stringify({ updated: new Date().toISOString(), predmety }));
+    } catch (err) {
+      console.error("Body sa nepodarilo prečítať:", err.message);
+      res.writeHead(500, { "Content-Type": TYPES[".json"] });
+      res.end(JSON.stringify({ error: "Body sa nepodarilo prečítať z Obsidianu" }));
     }
     return;
   }

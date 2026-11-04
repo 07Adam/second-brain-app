@@ -12,7 +12,7 @@ and it behaves like a native app (own icon, full screen, no App Store).
 - [x] Home screen with mini-app tiles, iPhone-ready (safe areas, home-screen icon)
 - [x] Server health indicator
 - [x] Deadlines with countdown (read-only from the vault, last data kept on the phone)
-- [ ] Grade tables (read-only from the vault)
+- [x] Grade tables (read-only from the vault, any note with a "## Moje body" section)
 - [ ] Offline mode (last synced data when the laptop is off)
 - [ ] Quick note → Obsidian
 - [ ] Birthdays → iPhone Calendar (.ics)

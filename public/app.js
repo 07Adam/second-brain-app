@@ -165,11 +165,125 @@ async function loadTerminy() {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Prepínanie obrazoviek podľa adresy (#terminy, # = domov)
+// 4. Bodovanie
+// ---------------------------------------------------------------------------
+const POINTS_KEY = "bodovanie";
+
+// v ktorom stĺpci je hodnota s daným menom (napr. "Spolu"); -1 ak taký nie je
+function columnIndex(header, name) {
+  return header.findIndex((h) => h.toLowerCase() === name.toLowerCase());
+}
+
+function renderBodovanie(data, fromCache) {
+  const list = document.getElementById("bodovanie-list");
+  list.replaceChildren();
+
+  const updated = new Date(data.updated).toLocaleString("sk-SK", {
+    day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+  document.getElementById("bodovanie-updated").textContent = fromCache
+    ? `Offline — posledné dáta z ${updated}`
+    : `Aktualizované ${updated} z Obsidianu`;
+
+  if (data.predmety.length === 0) {
+    list.append(el("p", "empty", "Žiadna poznámka v „01 - Škola“ nemá sekciu „## Moje body“."));
+    return;
+  }
+
+  for (const p of data.predmety) {
+    const card = el("section", "subject");
+
+    // hlavička: názov predmetu + celkové body (posledný súčet, napr. "Spolu")
+    const head = el("div", "subject-head");
+    head.append(el("h2", "subject-title", p.title));
+    const main = p.totals[p.totals.length - 1];
+    if (main) {
+      const big = el("span", "subject-big", String(main.got));
+      big.append(el("small", "", ` / ${main.max}`));
+      head.append(big);
+    }
+    card.append(head);
+
+    // ukazovateľ pre každý súčet (Zápočet, Skúška, Spolu…)
+    for (const t of p.totals) {
+      const row = el("div", "bar-row");
+      const label = el("div", "bar-label");
+      label.append(el("span", "", t.label), el("span", "", `${t.got} / ${t.max}`));
+      const bar = el("div", "bar");
+      const fill = el("div");
+      fill.style.width = `${Math.min(100, Math.round((t.got / t.max) * 100))}%`; // percentá
+      bar.append(fill);
+      row.append(label, bar);
+      card.append(row);
+    }
+
+    // moje vlastné zhrnutie z poznámky ("Ako som na tom")
+    if (p.status.length) {
+      const ul = el("ul", "status-list");
+      for (const s of p.status) ul.append(el("li", "", s));
+      card.append(ul);
+    }
+
+    // rozbaľovací zoznam jednotlivých položiek
+    if (p.items.length) {
+      const details = el("details");
+      details.append(el("summary", "", `Položky (${p.items.length})`));
+      const rows = el("div", "rows");
+      const scoreCol = [columnIndex(p.header, "Spolu"), columnIndex(p.header, "Body"), 1].find((i) => i > 0);
+      const noteCol = columnIndex(p.header, "Poznámka");
+      for (const item of p.items) {
+        const row = el("div", "row");
+        const name = el("span", "row-name", item[0]);
+        if (noteCol > 0 && item[noteCol]) name.append(el("span", "row-note", item[noteCol]));
+        const score = item[scoreCol] || "–";
+        row.append(name, el("span", score.startsWith("–") ? "row-score pending" : "row-score", score));
+        rows.append(row);
+      }
+      details.append(rows);
+      card.append(details);
+    }
+
+    if (p.updated) card.append(el("p", "item-when", `Poznámka upravená ${p.updated}`));
+    list.append(card);
+  }
+}
+
+// na dlaždicu: "ZAP 42 · ZIM 11"
+function renderPointsOnTile(data) {
+  const parts = data.predmety
+    .filter((p) => p.totals.length)
+    .map((p) => `${p.title} ${p.totals[p.totals.length - 1].got}`);
+  document.getElementById("points-summary").textContent = parts.length ? parts.join(" · ") : "zatiaľ nič";
+}
+
+async function loadBodovanie() {
+  try {
+    const response = await fetch("/api/bodovanie", { cache: "no-store" });
+    if (!response.ok) throw new Error("server odpovedal chybou");
+    const data = await response.json();
+    try { localStorage.setItem(POINTS_KEY, JSON.stringify(data)); } catch (e) { /* nevadí */ }
+    renderBodovanie(data, false);
+    renderPointsOnTile(data);
+  } catch (error) {
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(POINTS_KEY)); } catch (e) { cached = null; }
+    if (cached) {
+      renderBodovanie(cached, true);
+      renderPointsOnTile(cached);
+    } else {
+      document.getElementById("bodovanie-updated").textContent =
+        "Body sa nedajú načítať — notebook nie je dostupný a v mobile ešte nič uložené nie je.";
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 5. Prepínanie obrazoviek podľa adresy (#terminy, #bodovanie, # = domov)
 // ---------------------------------------------------------------------------
 const views = {
   "": document.getElementById("view-home"),
   terminy: document.getElementById("view-terminy"),
+  bodovanie: document.getElementById("view-bodovanie"),
 };
 
 function showView() {
@@ -184,11 +298,12 @@ function showView() {
 window.addEventListener("hashchange", showView);
 
 // ---------------------------------------------------------------------------
-// 5. Štart
+// 6. Štart
 // ---------------------------------------------------------------------------
 showView();
 checkServer();
 loadTerminy();
+loadBodovanie();
 
 // každých 30 s skontroluj server; keď sa appka vráti z pozadia, obnov termíny
 setInterval(checkServer, 30000);
@@ -196,5 +311,6 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     checkServer();
     loadTerminy();
+    loadBodovanie();
   }
 });

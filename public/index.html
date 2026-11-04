@@ -36,8 +36,7 @@
       <a class="tile tile-amber" href="#bodovanie">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
         <span class="name">Bodovanie</span>
-        <span class="sub">ZAP, M1, ZIM…</span>
-        <span class="badge">čoskoro</span>
+        <span class="sub" id="points-summary">ZAP, ZIM…</span>
       </a>
       <a class="tile tile-green" href="#poznamka">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -69,6 +68,17 @@
     <h1>Termíny</h1>
     <p class="status" id="terminy-updated">&nbsp;</p>
     <ol class="list" id="terminy-list"></ol>
+  </main>
+
+  <!-- Obrazovka 3: bodovanie (#bodovanie) -->
+  <main class="screen" id="view-bodovanie" hidden>
+    <a class="back" href="#">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Domov
+    </a>
+    <h1>Bodovanie</h1>
+    <p class="status" id="bodovanie-updated">&nbsp;</p>
+    <div class="list" id="bodovanie-list"></div>
   </main>
 
   <script src="/app.js"></script>
