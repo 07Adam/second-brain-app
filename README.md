@@ -13,7 +13,7 @@ and it behaves like a native app (own icon, full screen, no App Store).
 - [x] Server health indicator
 - [x] Deadlines with countdown (read-only from the vault, last data kept on the phone)
 - [x] Grade tables (read-only from the vault, any note with a "## Moje body" section)
-- [ ] Offline mode (last synced data when the laptop is off)
+- [x] Offline mode (service worker + last synced data when the laptop is off)
 - [ ] Quick note → Obsidian
 - [ ] Birthdays → iPhone Calendar (.ics)
 - [ ] English conversation practice (Claude API)
@@ -27,10 +27,25 @@ cp config.example.json config.json   # then edit host, port and vaultPath
 node server.js
 ```
 
-Then open `http://<host>:<port>` on the phone (same network).
+Keep `host` set to `127.0.0.1`, so the server is reachable only from this computer.
 
-`host` decides who can reach the app. Use `127.0.0.1` for this computer only, or the
-address of a private network (e.g. a laptop hotspot or Tailscale). Do not use a public network address.
+### Reach it from the phone (HTTPS via Tailscale)
+
+The offline mode uses a service worker, and iOS allows service workers only over HTTPS.
+[Tailscale Serve](https://tailscale.com/kb/1312/serve) gives the app an HTTPS address that
+works only inside your own tailnet (not on the public internet):
+
+1. Install Tailscale on the laptop and the phone and sign in with the same account.
+2. In the Tailscale admin console, enable **MagicDNS** and **HTTPS certificates** (DNS page).
+3. On the laptop:
+
+   ```bash
+   sudo tailscale serve --bg 3000
+   ```
+
+4. Open `https://<machine>.<tailnet>.ts.net` in Safari on the phone and add it to the home screen.
+
+Do not use `tailscale funnel` — that would publish the app on the internet.
 
 ## Project structure
 

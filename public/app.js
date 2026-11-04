@@ -25,9 +25,20 @@ document.getElementById("greeting").textContent = greeting;
 const statusEl = document.getElementById("status");
 const statusText = document.getElementById("status-text");
 
+// fetch, ktorý po 4 sekundách vzdá — keď je notebook vypnutý, nečakáme donekonečna
+async function fetchApi(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+  try {
+    return await fetch(url, { cache: "no-store", signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function checkServer() {
   try {
-    const response = await fetch("/api/health", { cache: "no-store" });
+    const response = await fetchApi("/api/health");
     if (!response.ok) {
       throw new Error("server odpovedal chybou");
     }
@@ -143,7 +154,7 @@ function renderNextOnTile(data) {
 
 async function loadTerminy() {
   try {
-    const response = await fetch("/api/terminy", { cache: "no-store" });
+    const response = await fetchApi("/api/terminy");
     if (!response.ok) throw new Error("server odpovedal chybou");
     const data = await response.json();
     // zapamätaj si ich v mobile pre prípad, že notebook bude vypnutý
@@ -258,7 +269,7 @@ function renderPointsOnTile(data) {
 
 async function loadBodovanie() {
   try {
-    const response = await fetch("/api/bodovanie", { cache: "no-store" });
+    const response = await fetchApi("/api/bodovanie");
     if (!response.ok) throw new Error("server odpovedal chybou");
     const data = await response.json();
     try { localStorage.setItem(POINTS_KEY, JSON.stringify(data)); } catch (e) { /* nevadí */ }
@@ -314,3 +325,11 @@ document.addEventListener("visibilitychange", () => {
     loadBodovanie();
   }
 });
+
+// offline režim: zaregistruj service worker (sw.js).
+// iPhone ho povolí iba cez https:// (alebo na localhoste), inak tento riadok nič nespraví.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch((err) => {
+    console.warn("Offline režim sa nepodarilo zapnúť:", err);
+  });
+}

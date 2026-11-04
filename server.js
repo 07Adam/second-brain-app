@@ -16,7 +16,9 @@ const configFile = fs.existsSync(path.join(__dirname, "config.json"))
   : "config.example.json";
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, configFile), "utf8"));
 
-const HOST = config.host; // na akej adrese server počúva (napr. moja Tailscale adresa 100.x.y.z)
+// na akej adrese server počúva. 127.0.0.1 = iba vnútri notebooku;
+// do mobilu ho bezpečne cez https:// posiela "tailscale serve" (pozri README)
+const HOST = config.host;
 const PORT = config.port; // číslo portu, napr. 3000
 
 // priečinok so súbormi appky
@@ -94,7 +96,8 @@ function handleRequest(req, res) {
       return;
     }
     const type = TYPES[path.extname(fullPath)] || "application/octet-stream";
-    res.writeHead(200, { "Content-Type": type });
+    // no-cache: mobil sa vždy opýta, či nemám novšiu verziu (o offline sa stará sw.js)
+    res.writeHead(200, { "Content-Type": type, "Cache-Control": "no-cache" });
     res.end(data);
   });
 }
